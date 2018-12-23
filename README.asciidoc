@@ -1,0 +1,5 @@
+You need to install grammars:
+
+----
+$ npm i -g tree-sitter-rust
+----

@@ -1,0 +1,21 @@
+[package]
+name = "kak-tree"
+version = "0.1.0"
+authors = ["Ruslan Prokopchuk <fer.obbee@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+clap = "2"
+serde = "1"
+serde_derive = "1"
+slog = { version = "2", features = ["release_max_level_debug"] }
+slog-scope = "4"
+sloggers = "0"
+toml = "0"
+tree-sitter = "0"
+
+[build-dependencies]
+cc = "1"
+
+[profile.release]
+lto = true
