@@ -111,22 +111,23 @@ fn handle_request(request: &Request) -> String {
 
 fn find_deepest_node_containing_range<'a>(tree: &'a Tree, range: &Range) -> Node<'a> {
     let root = tree.root_node();
-    let mut cursor = Some(root);
-    'outer: while let Some(node) = cursor {
-        if node.range().start_byte <= range.start_byte && range.end_byte <= node.range().end_byte {
-            for child in node.children() {
-                // Repeatedly executing SelectNode would incrementally select ancestors because of strong inequality here.
-                if child.range().start_byte < range.start_byte
-                    && range.end_byte < child.range().end_byte
-                    && child.is_named()
-                {
-                    cursor = Some(child);
-                    continue 'outer;
-                }
+    let mut node = root;
+    'outer: while node.range().start_byte <= range.start_byte
+        && range.end_byte <= node.range().end_byte
+    {
+        let parent = node;
+        for child in parent.children() {
+            if child.is_named()
+                && child.range().start_byte <= range.start_byte
+                && range.end_byte < child.range().end_byte
+                && !(child.range().start_byte == range.start_byte
+                    && range.end_byte == child.range().end_byte - 1)
+            {
+                node = child;
+                continue 'outer;
             }
-            return node;
         }
-        break;
+        return node;
     }
     root
 }
