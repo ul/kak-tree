@@ -1,5 +1,28 @@
-You need to install grammars:
+= Structural selections for Kakoune
+
+kak-tree is a plugin for Kakoune which enables selection of syntax tree nodes. Parsing is performed with https://github.com/tree-sitter/tree-sitter[tree-sitter].
+
+Status: pre-alpha and I mean it.
+
+== Installation
 
 ----
-$ npm i -g tree-sitter-rust
+git clone --recurse-submodules
+cargo build --release
+cargo install
+cp rc/tree.kak ~/.config/kak/autoload/
 ----
+
+You might want to remove unused languages from `build.rs` and `src/main.rs` to reduce binary size.
+
+== Usage
+
+|===
+| tree-select-node | Extend selections to the deepest enclosing nodes. If any selection is equal to node range, then extend to one's parent range.
+|===
+
+More commands to come.
+
+== License
+
+For kak-tree see UNLICENSE file. For tree-sitter and its parsers look at their repositories.

@@ -6,8 +6,8 @@ edition = "2018"
 
 [dependencies]
 clap = "2"
-serde = "1"
-serde_derive = "1"
+itertools = "0"
+serde = { version = "1", features = ["derive"] }
 slog = { version = "2", features = ["release_max_level_debug"] }
 slog-scope = "4"
 sloggers = "0"
@@ -15,7 +15,7 @@ toml = "0"
 tree-sitter = "0"
 
 [build-dependencies]
-cc = "1"
+cc = { version = "1", features = ["parallel"] }
 
 [profile.release]
 lto = true
