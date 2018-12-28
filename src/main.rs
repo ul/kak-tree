@@ -253,7 +253,7 @@ fn kak_coords_to_byte_and_point(buffer: &[String], coords: &str) -> (usize, Poin
 fn filetype_to_language(filetype: &str) -> Language {
     let sitter = match filetype {
         #[cfg(feature = "bash")]
-        "bash" => tree_sitter_bash,
+        "sh" => tree_sitter_bash,
         #[cfg(feature = "c")]
         "c" => tree_sitter_c,
         #[cfg(feature = "c_sharp")]
