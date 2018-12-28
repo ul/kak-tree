@@ -19,3 +19,47 @@ cc = { version = "1", features = ["parallel"] }
 
 [profile.release]
 lto = true
+
+[features]
+default = ["rust"]
+all = [
+    "bash",
+    "c_sharp",
+    "c",
+    "cpp",
+    "css",
+    "go",
+    "haskell",
+    "html",
+    "java",
+    "javascript",
+    "json",
+    "julia",
+    "ocaml",
+    "php",
+    "python",
+    "ruby",
+    "rust",
+    "scala",
+    "typescript"
+]
+bash = []
+c_sharp = []
+c = []
+cpp = []
+css = []
+go = []
+haskell = []
+html = []
+java = []
+javascript = []
+json = []
+julia = []
+ocaml = []
+php = []
+python = []
+ruby = []
+rust = []
+scala = []
+typescript = []
+

@@ -4,25 +4,43 @@ use std::path::PathBuf;
 
 fn main() {
     for lang in &[
+        #[cfg(feature = "bash")]
         "bash",
+        #[cfg(feature = "c_sharp")]
         "c-sharp",
+        #[cfg(feature = "c")]
         "c",
+        #[cfg(feature = "cpp")]
         "cpp",
+        #[cfg(feature = "css")]
         "css",
+        #[cfg(feature = "go")]
         "go",
+        #[cfg(feature = "haskell")]
         "haskell",
+        #[cfg(feature = "html")]
         "html",
+        #[cfg(feature = "java")]
         "java",
+        #[cfg(feature = "javascript")]
         "javascript",
+        #[cfg(feature = "json")]
         "json",
+        #[cfg(feature = "julia")]
         "julia",
+        #[cfg(feature = "ocaml")]
         "ocaml",
+        #[cfg(feature = "php")]
         "php",
+        #[cfg(feature = "python")]
         "python",
+        #[cfg(feature = "ruby")]
         "ruby",
+        #[cfg(feature = "rust")]
         "rust",
+        #[cfg(feature = "scala")]
         "scala",
-        // "swift",
+        #[cfg(feature = "typescript")]
         "typescript",
     ] {
         let mut build = cc::Build::new();

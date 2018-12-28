@@ -6,14 +6,18 @@ Status: proof of concept.
 
 == Installation
 
+Replace `"rust javascript"` with a list of languages you need. Or use `all` to build all supported
+languages. Note that `all` build takes a long time, and resulting binary is quite fat which could
+have a negative impact on responsiveness.
+
 ----
 git clone --recurse-submodules
-cargo build --release
+cargo build --release --features "rust javascript"
 cargo install
 cp rc/tree.kak ~/.config/kak/autoload/
 ----
 
-You might want to remove unused languages from `build.rs` and `src/main.rs` to reduce binary size.
+Look at `Cargo.toml` for a full list of supported languages.
 
 == Usage
 
