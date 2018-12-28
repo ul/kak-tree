@@ -21,10 +21,25 @@ Look at `Cargo.toml` for a full list of supported languages.
 
 == Usage
 
+NOTE: "The deepest enclosing node" means the one which matters. For now it's so-called named
+node (it's named in tree-sitter grammar definition for the given language), and in future custom
+white/balcklisting will be supported on top of that.
+
+[cols=2*]
 |===
-| tree-select-node | Extend selections to the deepest enclosing nodes. If any selection is equal to node range, then extend to one's parent range.
-| tree-select-next-node | Extend selections to the deepest enclosing nodes' next siblings.
-| tree-select-prev-node | Extend selections to the deepest enclosing nodes' previous siblings.
+| tree-select-node
+| Extend selections to the deepest enclosing nodes. If any selection is equal to node range, then
+extend to one's parent range.
+
+| tree-select-next-node
+| Extend selections to the deepest enclosing nodes' next siblings.
+
+| tree-select-prev-node
+| Extend selections to the deepest enclosing nodes' previous siblings.
+
+| tree-node-sexp
+| Show info box with a syntax tree of the deepest enclosing node of the main selection. This time
+"deepest" means "deepest", including anonymous and blacklisted nodes, without any filter applied.
 |===
 
 More commands to come.

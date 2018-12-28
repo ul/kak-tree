@@ -26,5 +26,6 @@ content = """
 define-command tree-select-node %{ tree-command SelectNode }
 define-command tree-select-next-node %{ tree-command SelectNextNode }
 define-command tree-select-prev-node %{ tree-command SelectPrevNode }
+define-command tree-node-sexp %{ tree-command NodeSExp }
 
 

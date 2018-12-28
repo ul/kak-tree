@@ -59,6 +59,7 @@ enum Op {
     SelectNode,
     SelectNextNode,
     SelectPrevNode,
+    NodeSExp,
 }
 
 #[derive(Deserialize)]
@@ -102,7 +103,7 @@ fn main() {
     std::io::stdin().read_to_string(&mut request).unwrap();
     let request: Request = toml::from_str(&request).unwrap();
     let response = handle_request(&request);
-    println!("select {}", response);
+    println!("{}", response);
 }
 
 fn handle_request(request: &Request) -> String {
@@ -124,6 +125,7 @@ fn handle_request(request: &Request) -> String {
                 let node = traverse_up_to_node_which_matters(node);
                 new_ranges.push(node.range());
             }
+            select_ranges(&buffer, &new_ranges)
         }
         Op::SelectNextNode => {
             for range in &ranges {
@@ -135,6 +137,7 @@ fn handle_request(request: &Request) -> String {
                     new_ranges.push(node.range());
                 }
             }
+            select_ranges(&buffer, &new_ranges)
         }
         Op::SelectPrevNode => {
             for range in &ranges {
@@ -146,9 +149,17 @@ fn handle_request(request: &Request) -> String {
                     new_ranges.push(node.range());
                 }
             }
+            select_ranges(&buffer, &new_ranges)
         }
-    };
-    ranges_to_selections_desc(&buffer, &new_ranges)
+        Op::NodeSExp => {
+            let node = find_range_superset_deepest_node(&tree, &ranges[0]);
+            format!("info '{}'", node.to_sexp())
+        }
+    }
+}
+
+fn select_ranges(buffer: &[String], ranges: &[Range]) -> String {
+    format!("select {}", ranges_to_selections_desc(&buffer, &ranges))
 }
 
 fn traverse_up_to_node_which_matters(node: Node) -> Node {
