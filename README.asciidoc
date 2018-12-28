@@ -21,9 +21,10 @@ Look at `Cargo.toml` for a full list of supported languages.
 
 == Usage
 
-NOTE: "The deepest enclosing node" means the one which matters. For now it's so-called named
-node (it's named in tree-sitter grammar definition for the given language), and in future custom
-white/balcklisting will be supported on top of that.
+NOTE: "The deepest enclosing node" means the one which matters. It means that node is named (does
+have name in the language grammar definition) and is either whitelisted (if whitelist is defined)
+or not blacklisted (if blacklist is defined). See Configuration section to learn more about
+white/blacklisting.
 
 [cols=2*]
 |===
@@ -43,6 +44,36 @@ extend to one's parent range.
 |===
 
 More commands to come.
+
+== Configuration
+
+kak-tree supports configuration via a configuration file. As for now there is no default path to
+load the configuration file, and it must be given using CLI option `--config` or `-c` for short:
+
+----
+set global tree_cmd 'kak-tree -c /path/to/kak-tree.toml'
+----
+
+=== Filetype configuration
+
+Configuration for specific filetypes should be provided like this:
+
+----
+[filetype.rust]
+blacklist = ["identifier", "scoped_identifier", "string_literal"]
+whitelist = ["function_item"]
+----
+
+If `whitelist` array is provided then kak-tree selection will skip nodes which kinds are not whitelisted.
+If `blacklist` array is provided then kak-tree selection will skip nodes which kinds are blacklisted.
+
+WARNING: `whitelist` takes precedence over `blacklist`. In the example above kak-tree would expand
+selection up to the function definition, ignoring other node kinds.
+
+NOTE: `tree-node-sexp` command is useful for exploring node kinds which appear in the specific code.
+
+Whitelisting or blacklisting node kinds could be tedious as tree-sitter parsers define many of them,
+but it also could be rewarding as you will be able to quickly modify selection in scopes which matter for you with fewer keystrokes. 
 
 == License
 

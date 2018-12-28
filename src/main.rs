@@ -4,6 +4,7 @@ extern crate slog;
 extern crate slog_scope;
 
 use clap::{crate_version, App, Arg};
+use fnv::FnvHashMap;
 use itertools::Itertools;
 use serde::Deserialize;
 use sloggers::terminal::{Destination, TerminalLoggerBuilder};
@@ -70,11 +71,30 @@ struct Request {
     content: String,
 }
 
+#[derive(Deserialize)]
+struct FiletypeConfig {
+    blacklist: Option<Vec<String>>,
+    whitelist: Option<Vec<String>>,
+}
+
+#[derive(Deserialize, Default)]
+struct Config {
+    filetype: FnvHashMap<String, FiletypeConfig>,
+}
+
 fn main() {
     let matches = App::new("kak-tree")
         .version(crate_version!())
         .author("Ruslan Prokopchuk <fer.obbee@gmail.com>")
         .about("Structural selections for Kakoune")
+        .arg(
+            Arg::with_name("config")
+                .short("c")
+                .long("config")
+                .value_name("FILE")
+                .help("Read config from FILE")
+                .takes_value(true),
+        )
         .arg(
             Arg::with_name("v")
                 .short("v")
@@ -82,6 +102,13 @@ fn main() {
                 .help("Sets the level of verbosity"),
         )
         .get_matches();
+
+    let config = if let Some(config_path) = matches.value_of("config") {
+        let config = std::fs::read_to_string(config_path).unwrap();
+        toml::from_str(&config).unwrap()
+    } else {
+        Config::default()
+    };
 
     let verbosity = matches.occurrences_of("v") as u8;
 
@@ -102,11 +129,11 @@ fn main() {
     let mut request = String::new();
     std::io::stdin().read_to_string(&mut request).unwrap();
     let request: Request = toml::from_str(&request).unwrap();
-    let response = handle_request(&request);
+    let response = handle_request(&config, &request);
     println!("{}", response);
 }
 
-fn handle_request(request: &Request) -> String {
+fn handle_request(config: &Config, request: &Request) -> String {
     let mut parser = Parser::new();
     let language = filetype_to_language(&request.filetype);
     parser.set_language(language).unwrap();
@@ -118,11 +145,12 @@ fn handle_request(request: &Request) -> String {
         .collect::<Vec<_>>();
     let ranges = selections_desc_to_ranges(&buffer, &request.selections_desc);
     let mut new_ranges = Vec::new();
+    let filetype_config = config.filetype.get(&request.filetype);
     match &request.op {
         Op::SelectNode => {
             for range in &ranges {
                 let node = find_range_strict_superset_deepest_node(&tree, range);
-                let node = traverse_up_to_node_which_matters(node);
+                let node = traverse_up_to_node_which_matters(filetype_config, node);
                 new_ranges.push(node.range());
             }
             select_ranges(&buffer, &new_ranges)
@@ -130,7 +158,7 @@ fn handle_request(request: &Request) -> String {
         Op::SelectNextNode => {
             for range in &ranges {
                 let node = find_range_superset_deepest_node(&tree, range);
-                let node = traverse_up_to_node_which_matters(node);
+                let node = traverse_up_to_node_which_matters(filetype_config, node);
                 if let Some(node) = node.next_named_sibling() {
                     new_ranges.push(node.range());
                 } else {
@@ -142,7 +170,7 @@ fn handle_request(request: &Request) -> String {
         Op::SelectPrevNode => {
             for range in &ranges {
                 let node = find_range_superset_deepest_node(&tree, range);
-                let node = traverse_up_to_node_which_matters(node);
+                let node = traverse_up_to_node_which_matters(filetype_config, node);
                 if let Some(node) = node.prev_named_sibling() {
                     new_ranges.push(node.range());
                 } else {
@@ -162,12 +190,25 @@ fn select_ranges(buffer: &[String], ranges: &[Range]) -> String {
     format!("select {}", ranges_to_selections_desc(&buffer, &ranges))
 }
 
-fn traverse_up_to_node_which_matters(node: Node) -> Node {
-    let mut cursor = node;
-    while !cursor.is_named() && cursor.parent().is_some() {
-        cursor = cursor.parent().unwrap();
+fn traverse_up_to_node_which_matters<'a>(
+    filetype_config: Option<&FiletypeConfig>,
+    current_node: Node<'a>,
+) -> Node<'a> {
+    let node_matters: Box<Fn(&str) -> bool> = match filetype_config {
+        Some(config) => match &config.whitelist {
+            Some(whitelist) => Box::new(move |kind| whitelist.iter().any(|s| s == kind)),
+            None => match &config.blacklist {
+                Some(blacklist) => Box::new(move |kind| !blacklist.iter().any(|s| s == kind)),
+                None => Box::new(|_| true),
+            },
+        },
+        None => Box::new(|_| true),
+    };
+    let mut node = current_node;
+    while !(node.is_named() && node_matters(node.kind())) && node.parent().is_some() {
+        node = node.parent().unwrap();
     }
-    cursor
+    node
 }
 
 fn find_range_strict_superset_deepest_node<'a>(tree: &'a Tree, range: &Range) -> Node<'a> {
