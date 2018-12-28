@@ -120,13 +120,15 @@ fn handle_request(request: &Request) -> String {
     match &request.op {
         Op::SelectNode => {
             for range in &ranges {
-                let node = find_deepest_node_containing_range(&tree, range);
+                let node = find_range_strict_superset_deepest_node(&tree, range);
+                let node = traverse_up_to_node_which_matters(node);
                 new_ranges.push(node.range());
             }
         }
         Op::SelectNextNode => {
             for range in &ranges {
-                let node = find_deepest_node_containing_range(&tree, range);
+                let node = find_range_superset_deepest_node(&tree, range);
+                let node = traverse_up_to_node_which_matters(node);
                 if let Some(node) = node.next_named_sibling() {
                     new_ranges.push(node.range());
                 } else {
@@ -136,7 +138,8 @@ fn handle_request(request: &Request) -> String {
         }
         Op::SelectPrevNode => {
             for range in &ranges {
-                let node = find_deepest_node_containing_range(&tree, range);
+                let node = find_range_superset_deepest_node(&tree, range);
+                let node = traverse_up_to_node_which_matters(node);
                 if let Some(node) = node.prev_named_sibling() {
                     new_ranges.push(node.range());
                 } else {
@@ -148,16 +151,20 @@ fn handle_request(request: &Request) -> String {
     ranges_to_selections_desc(&buffer, &new_ranges)
 }
 
-fn find_deepest_node_containing_range<'a>(tree: &'a Tree, range: &Range) -> Node<'a> {
-    let root = tree.root_node();
-    let mut node = root;
-    'outer: while node.range().start_byte <= range.start_byte
-        && range.end_byte <= node.range().end_byte
-    {
+fn traverse_up_to_node_which_matters(node: Node) -> Node {
+    let mut cursor = node;
+    while !cursor.is_named() && cursor.parent().is_some() {
+        cursor = cursor.parent().unwrap();
+    }
+    cursor
+}
+
+fn find_range_strict_superset_deepest_node<'a>(tree: &'a Tree, range: &Range) -> Node<'a> {
+    let mut node = tree.root_node();
+    'outer: loop {
         let parent = node;
         for child in parent.children() {
-            if child.is_named()
-                && child.range().start_byte <= range.start_byte
+            if child.range().start_byte <= range.start_byte
                 && range.end_byte < child.range().end_byte
                 && !(child.range().start_byte == range.start_byte
                     && range.end_byte == child.range().end_byte - 1)
@@ -168,7 +175,22 @@ fn find_deepest_node_containing_range<'a>(tree: &'a Tree, range: &Range) -> Node
         }
         return node;
     }
-    root
+}
+
+fn find_range_superset_deepest_node<'a>(tree: &'a Tree, range: &Range) -> Node<'a> {
+    let mut node = tree.root_node();
+    'outer: loop {
+        let parent = node;
+        for child in parent.children() {
+            if child.range().start_byte <= range.start_byte
+                && range.end_byte <= child.range().end_byte
+            {
+                node = child;
+                continue 'outer;
+            }
+        }
+        return node;
+    }
 }
 
 fn ranges_to_selections_desc(buffer: &[String], ranges: &[Range]) -> String {
