@@ -17,8 +17,8 @@ tree-sitter = "0"
 [build-dependencies]
 cc = { version = "1", features = ["parallel"] }
 
-[profile.release]
-lto = true
+# [profile.release]
+# lto = true
 
 [features]
 default = ["rust"]

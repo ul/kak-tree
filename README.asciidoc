@@ -23,6 +23,8 @@ Look at `Cargo.toml` for a full list of supported languages.
 
 |===
 | tree-select-node | Extend selections to the deepest enclosing nodes. If any selection is equal to node range, then extend to one's parent range.
+| tree-select-next-node | Extend selections to the deepest enclosing nodes' next siblings.
+| tree-select-prev-node | Extend selections to the deepest enclosing nodes' previous siblings.
 |===
 
 More commands to come.

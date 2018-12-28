@@ -57,6 +57,8 @@ extern "C" {
 #[derive(Deserialize)]
 enum Op {
     SelectNode,
+    SelectNextNode,
+    SelectPrevNode,
 }
 
 #[derive(Deserialize)]
@@ -100,31 +102,50 @@ fn main() {
     std::io::stdin().read_to_string(&mut request).unwrap();
     let request: Request = toml::from_str(&request).unwrap();
     let response = handle_request(&request);
-    println!("{}", response);
+    println!("select {}", response);
 }
 
 fn handle_request(request: &Request) -> String {
+    let mut parser = Parser::new();
+    let language = filetype_to_language(&request.filetype);
+    parser.set_language(language).unwrap();
+    let tree = parser.parse_str(&request.content, None).unwrap();
+    let buffer = request
+        .content
+        .split('\n')
+        .map(|s| format!("{}\n", s))
+        .collect::<Vec<_>>();
+    let ranges = selections_desc_to_ranges(&buffer, &request.selections_desc);
+    let mut new_ranges = Vec::new();
     match &request.op {
         Op::SelectNode => {
-            let mut parser = Parser::new();
-            let language = filetype_to_language(&request.filetype);
-            parser.set_language(language).unwrap();
-            let tree = parser.parse_str(&request.content, None).unwrap();
-            let buffer = request
-                .content
-                .split('\n')
-                .map(|s| format!("{}\n", s))
-                .collect::<Vec<_>>();
-            let ranges = selections_desc_to_ranges(&buffer, &request.selections_desc);
-            let mut new_ranges = Vec::new();
             for range in &ranges {
                 let node = find_deepest_node_containing_range(&tree, range);
                 new_ranges.push(node.range());
             }
-            let selections_desc = ranges_to_selections_desc(&buffer, &new_ranges);
-            format!("select {}", selections_desc)
         }
-    }
+        Op::SelectNextNode => {
+            for range in &ranges {
+                let node = find_deepest_node_containing_range(&tree, range);
+                if let Some(node) = node.next_named_sibling() {
+                    new_ranges.push(node.range());
+                } else {
+                    new_ranges.push(node.range());
+                }
+            }
+        }
+        Op::SelectPrevNode => {
+            for range in &ranges {
+                let node = find_deepest_node_containing_range(&tree, range);
+                if let Some(node) = node.prev_named_sibling() {
+                    new_ranges.push(node.range());
+                } else {
+                    new_ranges.push(node.range());
+                }
+            }
+        }
+    };
+    ranges_to_selections_desc(&buffer, &new_ranges)
 }
 
 fn find_deepest_node_containing_range<'a>(tree: &'a Tree, range: &Range) -> Node<'a> {
@@ -213,7 +234,7 @@ fn point_to_kak_coords(buffer: &[String], p: Point) -> String {
                 None
             }
         })
-        .unwrap();
+        .unwrap_or_else(|| buffer[p.row].len());
     format!("{}.{}", p.row + 1, offset + 1)
 }
 
