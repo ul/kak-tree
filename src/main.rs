@@ -210,15 +210,10 @@ fn handle_request(config: &Config, request: &Request) -> String {
         Op::SelectChildren => {
             for range in &ranges {
                 let node = find_range_superset_deepest_node(&tree, range);
-                let node = traverse_up_to_node_which_matters(filetype_config, node);
-                if node.named_child_count() > 0 {
-                    for child in named_children(&node) {
-                        if node_matters(filetype_config, child.kind()) {
-                            new_ranges.push(child.range());
-                        }
+                for child in named_children(&node) {
+                    if node_matters(filetype_config, child.kind()) {
+                        new_ranges.push(child.range());
                     }
-                } else {
-                    new_ranges.push(node.range());
                 }
             }
             select_ranges(&buffer, &new_ranges)
