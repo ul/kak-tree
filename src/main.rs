@@ -96,12 +96,24 @@ fn main() {
                 .takes_value(true),
         )
         .arg(
+            Arg::with_name("do-you-understand")
+                .long("do-you-understand")
+                .value_name("FILETYPE")
+                .help("Exit with 0 if FILETYPE is supported, non-zero otherwise")
+                .takes_value(true),
+        )
+        .arg(
             Arg::with_name("v")
                 .short("v")
                 .multiple(true)
                 .help("Sets the level of verbosity"),
         )
         .get_matches();
+
+    if let Some(filetype) = matches.value_of("do-you-understand") {
+        let language = filetype_to_language(filetype);
+        std::process::exit(if language.is_some() { 0 } else { 1 });
+    }
 
     let config = if let Some(config_path) = matches.value_of("config") {
         let config = std::fs::read_to_string(config_path).unwrap();
@@ -135,7 +147,7 @@ fn main() {
 
 fn handle_request(config: &Config, request: &Request) -> String {
     let mut parser = Parser::new();
-    let language = filetype_to_language(&request.filetype);
+    let language = filetype_to_language(&request.filetype).unwrap();
     parser.set_language(language).unwrap();
     let tree = parser.parse_str(&request.content, None).unwrap();
     let buffer = request
@@ -324,7 +336,7 @@ fn kak_coords_to_byte_and_point(buffer: &[String], coords: &str) -> (usize, Poin
     (byte, Point::new(row, column))
 }
 
-fn filetype_to_language(filetype: &str) -> Language {
+fn filetype_to_language(filetype: &str) -> Option<Language> {
     let sitter = match filetype {
         #[cfg(feature = "bash")]
         "sh" => tree_sitter_bash,
@@ -364,7 +376,7 @@ fn filetype_to_language(filetype: &str) -> Language {
         "scala" => tree_sitter_scala,
         #[cfg(feature = "typescript")]
         "typescript" => tree_sitter_typescript,
-        _ => unreachable!(),
+        _ => return None,
     };
-    unsafe { sitter() }
+    Some(unsafe { sitter() })
 }

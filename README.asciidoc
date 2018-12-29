@@ -19,6 +19,15 @@ cp rc/tree.kak ~/.config/kak/autoload/
 
 Look at `Cargo.toml` for a full list of supported languages.
 
+It is possible to check programmaticaly if kak-tree was built with support for a given filetype:
+
+----
+kak-tree --do-you-understand rust
+----
+
+If language is supported then exit code is 0 otherwise it's non-zero (1 at the moment, but it is not
+guaranteed in future).
+
 == Usage
 
 NOTE: "The deepest enclosing node" means the one which matters. It means that node is named (does
