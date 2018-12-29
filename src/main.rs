@@ -1,8 +1,3 @@
-#[macro_use]
-extern crate slog;
-#[macro_use]
-extern crate slog_scope;
-
 use clap::{crate_version, App, Arg};
 use fnv::FnvHashMap;
 use itertools::Itertools;
