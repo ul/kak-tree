@@ -237,7 +237,11 @@ fn named_children<'a>(node: &'a Node) -> impl Iterator<Item = Node<'a>> {
 }
 
 fn select_ranges(buffer: &[String], ranges: &[Range]) -> String {
-    format!("select {}", ranges_to_selections_desc(&buffer, &ranges))
+    if ranges.is_empty() {
+        "fail no selections remaining".into()
+    } else {
+        format!("select {}", ranges_to_selections_desc(&buffer, &ranges))
+    }
 }
 
 fn node_matters(filetype_config: Option<&FiletypeConfig>, kind: &str) -> bool {
