@@ -42,14 +42,23 @@ white/blacklisting.
 extend to one's parent range.
 
 | tree-select-next-node
-| Extend selections to the deepest enclosing nodes' next siblings.
+| Select the deepest enclosing nodes' next siblings.
 
 | tree-select-prev-node
-| Extend selections to the deepest enclosing nodes' previous siblings.
+| Select the deepest enclosing nodes' previous siblings.
 
 | tree-node-sexp
 | Show info box with a syntax tree of the deepest enclosing node of the main selection. This time
 "deepest" means "deepest", including anonymous and blacklisted nodes, without any filter applied.
+
+| tree-select-first-child
+| Find the deepest enclosing nodes of selections and then select each node's first child. If node
+has no children then keep selection on node.
+
+
+| tree-select-children
+| Find the deepest enclosing nodes of selections and then select each node's children. If node has
+no children then keep selection on node.
 |===
 
 More commands to come.

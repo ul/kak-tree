@@ -60,6 +60,8 @@ enum Op {
     SelectNode,
     SelectNextNode,
     SelectPrevNode,
+    SelectFirstChild,
+    SelectChildren,
     NodeSExp,
 }
 
@@ -191,6 +193,36 @@ fn handle_request(config: &Config, request: &Request) -> String {
             }
             select_ranges(&buffer, &new_ranges)
         }
+        Op::SelectFirstChild => {
+            'outer: for range in &ranges {
+                let node = find_range_superset_deepest_node(&tree, range);
+                let node = traverse_up_to_node_which_matters(filetype_config, node);
+                for child in named_children(&node) {
+                    if node_matters(filetype_config, child.kind()) {
+                        new_ranges.push(child.range());
+                        continue 'outer;
+                    }
+                }
+                new_ranges.push(node.range());
+            }
+            select_ranges(&buffer, &new_ranges)
+        }
+        Op::SelectChildren => {
+            for range in &ranges {
+                let node = find_range_superset_deepest_node(&tree, range);
+                let node = traverse_up_to_node_which_matters(filetype_config, node);
+                if node.named_child_count() > 0 {
+                    for child in named_children(&node) {
+                        if node_matters(filetype_config, child.kind()) {
+                            new_ranges.push(child.range());
+                        }
+                    }
+                } else {
+                    new_ranges.push(node.range());
+                }
+            }
+            select_ranges(&buffer, &new_ranges)
+        }
         Op::NodeSExp => {
             let node = find_range_superset_deepest_node(&tree, &ranges[0]);
             format!("info '{}'", node.to_sexp())
@@ -198,26 +230,37 @@ fn handle_request(config: &Config, request: &Request) -> String {
     }
 }
 
+fn named_children<'a>(node: &'a Node) -> impl Iterator<Item = Node<'a>> {
+    (0..node.child_count())
+        .into_iter()
+        .map(move |i| node.child(i).unwrap())
+}
+
 fn select_ranges(buffer: &[String], ranges: &[Range]) -> String {
     format!("select {}", ranges_to_selections_desc(&buffer, &ranges))
+}
+
+fn node_matters(filetype_config: Option<&FiletypeConfig>, kind: &str) -> bool {
+    match filetype_config {
+        Some(config) => match &config.whitelist {
+            Some(whitelist) => whitelist.iter().any(|s| s == kind),
+            None => match &config.blacklist {
+                Some(blacklist) => !blacklist.iter().any(|s| s == kind),
+                None => true,
+            },
+        },
+        None => true,
+    }
 }
 
 fn traverse_up_to_node_which_matters<'a>(
     filetype_config: Option<&FiletypeConfig>,
     current_node: Node<'a>,
 ) -> Node<'a> {
-    let node_matters: Box<Fn(&str) -> bool> = match filetype_config {
-        Some(config) => match &config.whitelist {
-            Some(whitelist) => Box::new(move |kind| whitelist.iter().any(|s| s == kind)),
-            None => match &config.blacklist {
-                Some(blacklist) => Box::new(move |kind| !blacklist.iter().any(|s| s == kind)),
-                None => Box::new(|_| true),
-            },
-        },
-        None => Box::new(|_| true),
-    };
     let mut node = current_node;
-    while !(node.is_named() && node_matters(node.kind())) && node.parent().is_some() {
+    while !(node.is_named() && node_matters(filetype_config, node.kind()))
+        && node.parent().is_some()
+    {
         node = node.parent().unwrap();
     }
     node

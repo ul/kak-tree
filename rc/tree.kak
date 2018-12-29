@@ -3,7 +3,7 @@ declare-option str tree_log "/tmp/kak-tree.log"
 
 declare-option -hidden str tree_draft
 
-define-command tree-command -params 1 %{
+define-command -hidden tree-command -params 1 %{
     evaluate-commands -draft -no-hooks %{exec '%'; set buffer tree_draft %val{selection}}
     evaluate-commands %sh{
 
@@ -26,6 +26,8 @@ content = """
 define-command tree-select-node %{ tree-command SelectNode }
 define-command tree-select-next-node %{ tree-command SelectNextNode }
 define-command tree-select-prev-node %{ tree-command SelectPrevNode }
+define-command tree-select-first-child %{ tree-command SelectFirstChild }
+define-command tree-select-children %{ tree-command SelectChildren }
 define-command tree-node-sexp %{ tree-command NodeSExp }
 
 
