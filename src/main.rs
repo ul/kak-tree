@@ -1,8 +1,3 @@
-#[macro_use]
-extern crate slog;
-#[macro_use]
-extern crate slog_scope;
-
 use clap::{crate_version, App, Arg};
 use fnv::FnvHashMap;
 use itertools::Itertools;
@@ -231,9 +226,7 @@ fn handle_request(config: &Config, request: &Request) -> String {
 }
 
 fn named_children<'a>(node: &'a Node) -> impl Iterator<Item = Node<'a>> {
-    (0..node.child_count())
-        .into_iter()
-        .map(move |i| node.child(i).unwrap())
+    (0..node.child_count()).map(move |i| node.child(i).unwrap())
 }
 
 fn select_ranges(buffer: &[String], ranges: &[Range]) -> String {
