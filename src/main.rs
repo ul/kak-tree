@@ -7,7 +7,7 @@ use sloggers::types::Severity;
 use sloggers::Build;
 use std::io::Read;
 use toml;
-use tree_sitter::{Language, Node, Parser, Point, Range, Tree};
+use tree_sitter::{Language, Node, Parser, Point, Range};
 
 extern "C" {
     #[cfg(feature = "bash")]
@@ -53,6 +53,7 @@ extern "C" {
 #[derive(Deserialize)]
 enum Op {
     SelectNode,
+    SelectNodes,
     SelectNextNode,
     SelectPrevNode,
     SelectFirstChild,
@@ -63,6 +64,7 @@ enum Op {
 #[derive(Deserialize)]
 struct Request {
     op: Op,
+    param: String,
     filetype: String,
     selections_desc: String,
     content: String,
@@ -158,7 +160,7 @@ fn handle_request(config: &Config, request: &Request) -> String {
     match &request.op {
         Op::SelectNode => {
             for range in &ranges {
-                let node = find_range_strict_superset_deepest_node(&tree, range);
+                let node = find_range_strict_superset_deepest_node(tree.root_node(), range);
                 let node = traverse_up_to_node_which_matters(filetype_config, node);
                 new_ranges.push(node.range());
             }
@@ -166,7 +168,7 @@ fn handle_request(config: &Config, request: &Request) -> String {
         }
         Op::SelectNextNode => {
             for range in &ranges {
-                let node = find_range_superset_deepest_node(&tree, range);
+                let node = find_range_superset_deepest_node(tree.root_node(), range);
                 let node = traverse_up_to_node_which_matters(filetype_config, node);
                 if let Some(node) = node.next_named_sibling() {
                     new_ranges.push(node.range());
@@ -178,7 +180,7 @@ fn handle_request(config: &Config, request: &Request) -> String {
         }
         Op::SelectPrevNode => {
             for range in &ranges {
-                let node = find_range_superset_deepest_node(&tree, range);
+                let node = find_range_superset_deepest_node(tree.root_node(), range);
                 let node = traverse_up_to_node_which_matters(filetype_config, node);
                 if let Some(node) = node.prev_named_sibling() {
                     new_ranges.push(node.range());
@@ -190,7 +192,7 @@ fn handle_request(config: &Config, request: &Request) -> String {
         }
         Op::SelectFirstChild => {
             'outer: for range in &ranges {
-                let node = find_range_superset_deepest_node(&tree, range);
+                let node = find_range_superset_deepest_node(tree.root_node(), range);
                 let node = traverse_up_to_node_which_matters(filetype_config, node);
                 for child in named_children(&node) {
                     if node_matters(filetype_config, child.kind()) {
@@ -204,7 +206,7 @@ fn handle_request(config: &Config, request: &Request) -> String {
         }
         Op::SelectChildren => {
             for range in &ranges {
-                let node = find_range_superset_deepest_node(&tree, range);
+                let node = find_range_superset_deepest_node(tree.root_node(), range);
                 for child in named_children(&node) {
                     if node_matters(filetype_config, child.kind()) {
                         new_ranges.push(child.range());
@@ -214,8 +216,31 @@ fn handle_request(config: &Config, request: &Request) -> String {
             select_ranges(&buffer, &new_ranges)
         }
         Op::NodeSExp => {
-            let node = find_range_superset_deepest_node(&tree, &ranges[0]);
+            let node = find_range_superset_deepest_node(tree.root_node(), &ranges[0]);
             format!("info '{}'", node.to_sexp())
+        }
+        Op::SelectNodes => {
+            let kind = &request.param;
+            for range in &ranges {
+                for node in find_nodes_in_range(tree.root_node(), range) {
+                    select_nodes(&node, kind, &mut new_ranges);
+                }
+            }
+            select_ranges(&buffer, &new_ranges)
+        }
+    }
+}
+
+fn select_nodes(node: &Node, kind: &str, new_ranges: &mut Vec<Range>) {
+    if node.kind() == kind {
+        new_ranges.push(node.range());
+    } else {
+        for child in named_children(&node) {
+            if child.kind() == kind {
+                new_ranges.push(child.range());
+            } else {
+                select_nodes(&child, kind, new_ranges);
+            }
         }
     }
 }
@@ -258,8 +283,8 @@ fn traverse_up_to_node_which_matters<'a>(
     node
 }
 
-fn find_range_strict_superset_deepest_node<'a>(tree: &'a Tree, range: &Range) -> Node<'a> {
-    let mut node = tree.root_node();
+fn find_range_strict_superset_deepest_node<'a>(root_node: Node<'a>, range: &Range) -> Node<'a> {
+    let mut node = root_node;
     'outer: loop {
         let parent = node;
         for child in parent.children() {
@@ -276,8 +301,8 @@ fn find_range_strict_superset_deepest_node<'a>(tree: &'a Tree, range: &Range) ->
     }
 }
 
-fn find_range_superset_deepest_node<'a>(tree: &'a Tree, range: &Range) -> Node<'a> {
-    let mut node = tree.root_node();
+fn find_range_superset_deepest_node<'a>(root_node: Node<'a>, range: &Range) -> Node<'a> {
+    let mut node = root_node;
     'outer: loop {
         let parent = node;
         for child in parent.children() {
@@ -290,6 +315,46 @@ fn find_range_superset_deepest_node<'a>(tree: &'a Tree, range: &Range) -> Node<'
         }
         return node;
     }
+}
+
+fn find_nodes_in_range<'a>(root_node: Node<'a>, range: &Range) -> Vec<Node<'a>> {
+    let mut nodes = Vec::new();
+    let node = find_range_superset_deepest_node(root_node, range);
+    if node.range().start_byte >= range.start_byte && range.end_byte >= node.range().end_byte {
+        nodes.push(node);
+        return nodes;
+    }
+    for child in node.children() {
+        if child.range().start_byte <= range.start_byte && range.end_byte >= child.range().end_byte
+        {
+            nodes.extend(find_nodes_in_range(
+                child,
+                &Range {
+                    start_byte: range.start_byte,
+                    start_point: range.start_point,
+                    end_byte: child.range().end_byte,
+                    end_point: child.range().end_point,
+                },
+            ));
+        } else if child.range().start_byte >= range.start_byte
+            && range.end_byte <= child.range().end_byte
+        {
+            nodes.extend(find_nodes_in_range(
+                child,
+                &Range {
+                    start_byte: child.range().start_byte,
+                    start_point: child.range().start_point,
+                    end_byte: range.end_byte,
+                    end_point: range.end_point,
+                },
+            ));
+        } else if child.range().start_byte >= range.start_byte
+            && range.end_byte >= child.range().end_byte
+        {
+            nodes.push(child);
+        }
+    }
+    nodes
 }
 
 fn ranges_to_selections_desc(buffer: &[String], ranges: &[Range]) -> String {
