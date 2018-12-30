@@ -59,6 +59,10 @@ has no children then keep selection on node.
 | tree-select-children
 | Find the deepest enclosing nodes of selections and then select each node's children. If node has
 no children then keep selection on node.
+
+| tree-select-nodes <KIND>
+| Selects all the KIND nodes wholly contained within an existing selection.
+
 |===
 
 More commands to come.
@@ -91,7 +95,7 @@ selection up to the function definition, ignoring other node kinds.
 NOTE: `tree-node-sexp` command is useful for exploring node kinds which appear in the specific code.
 
 Whitelisting or blacklisting node kinds could be tedious as tree-sitter parsers define many of them,
-but it also could be rewarding as you will be able to quickly modify selection in scopes which matter for you with fewer keystrokes. 
+but it also could be rewarding as you will be able to quickly modify selection in scopes which matter for you with fewer keystrokes.
 
 == License
 
