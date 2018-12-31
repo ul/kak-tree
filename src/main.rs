@@ -52,13 +52,14 @@ extern "C" {
 
 #[derive(Deserialize)]
 enum Op {
-    SelectNode,
-    SelectNodes,
-    SelectNextNode,
-    SelectPrevNode,
-    SelectFirstChild,
-    SelectChildren,
     NodeSExp,
+    SelectChildren,
+    SelectFirstChild,
+    SelectKind,
+    SelectNextNode,
+    SelectParentKind,
+    SelectParentNode,
+    SelectPrevNode,
 }
 
 #[derive(Deserialize)]
@@ -158,7 +159,7 @@ fn handle_request(config: &Config, request: &Request) -> String {
     let mut new_ranges = Vec::new();
     let filetype_config = config.filetype.get(&request.filetype);
     match &request.op {
-        Op::SelectNode => {
+        Op::SelectParentNode => {
             for range in &ranges {
                 let node = find_range_strict_superset_deepest_node(tree.root_node(), range);
                 let node = traverse_up_to_node_which_matters(filetype_config, node);
@@ -219,11 +220,25 @@ fn handle_request(config: &Config, request: &Request) -> String {
             let node = find_range_superset_deepest_node(tree.root_node(), &ranges[0]);
             format!("info '{}'", node.to_sexp())
         }
-        Op::SelectNodes => {
+        Op::SelectKind => {
             let kind = &request.param;
             for range in &ranges {
                 for node in find_nodes_in_range(tree.root_node(), range) {
                     select_nodes(&node, kind, &mut new_ranges);
+                }
+            }
+            select_ranges(&buffer, &new_ranges)
+        }
+        Op::SelectParentKind => {
+            let kind = &request.param;
+            for range in &ranges {
+                let mut cursor = Some(find_range_superset_deepest_node(tree.root_node(), range));
+                while let Some(node) = cursor {
+                    if node.kind() == kind {
+                        new_ranges.push(node.range());
+                        break;
+                    }
+                    cursor = node.parent();
                 }
             }
             select_ranges(&buffer, &new_ranges)

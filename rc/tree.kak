@@ -24,12 +24,13 @@ content = """
 
 
 
-define-command tree-select-node %{ tree-command SelectNode }
+define-command tree-select-parent-node %{ tree-command SelectParentNode }
 define-command tree-select-next-node %{ tree-command SelectNextNode }
 define-command tree-select-prev-node %{ tree-command SelectPrevNode }
 define-command tree-select-first-child %{ tree-command SelectFirstChild }
 define-command tree-select-children %{ tree-command SelectChildren }
 define-command tree-node-sexp %{ tree-command NodeSExp }
-define-command tree-select-nodes -params 1 %{ tree-command SelectNodes %arg{1} }
+define-command tree-select-kind -params 1 %{ tree-command SelectKind %arg{1} }
+define-command tree-select-parent-kind -params 1 %{ tree-command SelectParentKind %arg{1} }
 
 

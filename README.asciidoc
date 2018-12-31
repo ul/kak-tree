@@ -2,7 +2,7 @@
 
 kak-tree is a plugin for Kakoune which enables selection of syntax tree nodes. Parsing is performed with https://github.com/tree-sitter/tree-sitter[tree-sitter].
 
-Status: proof of concept.
+Status: proof of concept, API and overall development direction could change drastically based on feedback.
 
 == Installation
 
@@ -37,7 +37,7 @@ white/blacklisting.
 
 [cols=2*]
 |===
-| tree-select-node
+| tree-select-parent-node
 | Extend selections to the deepest enclosing nodes. If any selection is equal to node range, then
 extend to one's parent range.
 
@@ -55,13 +55,16 @@ extend to one's parent range.
 | Find the deepest enclosing nodes of selections and then select each node's first child. If node
 has no children then keep selection on node.
 
-
 | tree-select-children
 | Find the deepest enclosing nodes of selections and then select each node's children. If node has
 no children then keep selection on node.
 
-| tree-select-nodes <KIND>
+| tree-select-kind <KIND>
 | Selects all the KIND nodes wholly contained within an existing selection.
+
+| tree-select-parent-kind <KIND>
+| Select the closest ancestors of KIND of selections' deepest enclosing nodes. If any of selections
+don't have such ancestor, remove that selection.
 
 |===
 
