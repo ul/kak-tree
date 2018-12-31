@@ -1,10 +1,10 @@
 use clap::{crate_version, App, Arg};
-use fnv::FnvHashMap;
 use itertools::Itertools;
 use serde::Deserialize;
 use sloggers::terminal::{Destination, TerminalLoggerBuilder};
 use sloggers::types::Severity;
 use sloggers::Build;
+use std::collections::HashMap;
 use std::io::Read;
 use toml;
 use tree_sitter::{Language, Node, Parser, Point, Range};
@@ -76,13 +76,13 @@ struct FiletypeConfig {
     blacklist: Option<Vec<String>>,
     whitelist: Option<Vec<String>>,
     #[serde(default)]
-    group: FnvHashMap<String, Vec<String>>,
+    group: HashMap<String, Vec<String>>,
 }
 
 #[derive(Deserialize, Default)]
 struct Config {
     #[serde(default)]
-    filetype: FnvHashMap<String, FiletypeConfig>,
+    filetype: HashMap<String, FiletypeConfig>,
 }
 
 fn main() {
