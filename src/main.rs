@@ -75,10 +75,13 @@ struct Request {
 struct FiletypeConfig {
     blacklist: Option<Vec<String>>,
     whitelist: Option<Vec<String>>,
+    #[serde(default)]
+    group: FnvHashMap<String, Vec<String>>,
 }
 
 #[derive(Deserialize, Default)]
 struct Config {
+    #[serde(default)]
     filetype: FnvHashMap<String, FiletypeConfig>,
 }
 
@@ -221,20 +224,20 @@ fn handle_request(config: &Config, request: &Request) -> String {
             format!("info '{}'", node.to_sexp())
         }
         Op::SelectKind => {
-            let kind = &request.param;
+            let kinds = resolve_kind(filetype_config, &request.param);
             for range in &ranges {
                 for node in find_nodes_in_range(tree.root_node(), range) {
-                    select_nodes(&node, kind, &mut new_ranges);
+                    select_nodes(&node, &kinds, &mut new_ranges);
                 }
             }
             select_ranges(&buffer, &new_ranges)
         }
         Op::SelectParentKind => {
-            let kind = &request.param;
+            let kinds = resolve_kind(filetype_config, &request.param);
             for range in &ranges {
                 let mut cursor = Some(find_range_superset_deepest_node(tree.root_node(), range));
                 while let Some(node) = cursor {
-                    if node.kind() == kind {
+                    if kinds.iter().any(|kind| kind == node.kind()) {
                         new_ranges.push(node.range());
                         break;
                     }
@@ -246,15 +249,21 @@ fn handle_request(config: &Config, request: &Request) -> String {
     }
 }
 
-fn select_nodes(node: &Node, kind: &str, new_ranges: &mut Vec<Range>) {
-    if node.kind() == kind {
+fn resolve_kind(filetype_config: Option<&FiletypeConfig>, kind: &str) -> Vec<String> {
+    filetype_config
+        .and_then(|config| config.group.get(kind).cloned())
+        .unwrap_or_else(|| vec![kind.to_string()])
+}
+
+fn select_nodes(node: &Node, kinds: &[String], new_ranges: &mut Vec<Range>) {
+    if kinds.iter().any(|kind| kind == node.kind()) {
         new_ranges.push(node.range());
     } else {
         for child in named_children(&node) {
-            if child.kind() == kind {
+            if kinds.iter().any(|kind| kind == child.kind()) {
                 new_ranges.push(child.range());
             } else {
-                select_nodes(&child, kind, new_ranges);
+                select_nodes(&child, kinds, new_ranges);
             }
         }
     }

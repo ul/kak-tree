@@ -87,18 +87,38 @@ Configuration for specific filetypes should be provided like this:
 [filetype.rust]
 blacklist = ["identifier", "scoped_identifier", "string_literal"]
 whitelist = ["function_item"]
+group.identifier = ["identifier", "scoped_identifier"]
+group.fn = ["function_item"]
+
+[filetype.javascript]
+group.fn = ["function", "arrow_function"]
 ----
+
+==== White/blacklisting
 
 If `whitelist` array is provided then kak-tree selection will skip nodes which kinds are not whitelisted.
 If `blacklist` array is provided then kak-tree selection will skip nodes which kinds are blacklisted.
 
-WARNING: `whitelist` takes precedence over `blacklist`. In the example above kak-tree would expand
+NOTE: `whitelist` takes precedence over `blacklist`. In the example above kak-tree would expand
 selection up to the function definition, ignoring other node kinds.
 
 NOTE: `tree-node-sexp` command is useful for exploring node kinds which appear in the specific code.
 
 Whitelisting or blacklisting node kinds could be tedious as tree-sitter parsers define many of them,
 but it also could be rewarding as you will be able to quickly modify selection in scopes which matter for you with fewer keystrokes.
+
+==== Kind groups
+
+Groups of node kinds serve a two-fold purpose when using commands like `tree-select-kind` and
+`tree-select-parent-kind`:
+
+. Groups allow matching functionally similar node kinds (i.e. `identifier` and `scoped_identifier`
+in Rust) by a single query.
+
+. Groups allow matching functionally similar nodes across filetypes (i.e. `function_item` in Rust
+and `function` in JavaScript) as tree-sitter parsers don't use uniform node kind names.
+
+NOTE: `whitelist` and `blacklist` options doesn't expand groups yet.
 
 == License
 
