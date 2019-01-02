@@ -2,7 +2,7 @@
 
 kak-tree is a plugin for Kakoune which enables selection of syntax tree nodes. Parsing is performed with https://github.com/tree-sitter/tree-sitter[tree-sitter].
 
-Status: proof of concept, API and overall development direction could change drastically based on feedback.
+Status: proof of concept, interface and overall development direction could change drastically based on feedback.
 
 == Installation
 
@@ -30,45 +30,38 @@ guaranteed in future).
 
 == Usage
 
-NOTE: "The deepest enclosing node" means the one which matters. It means that node is named (does
-have name in the language grammar definition) and is either whitelisted (if whitelist is defined)
-or not blacklisted (if blacklist is defined). See Configuration section to learn more about
-white/blacklisting.
+Tree-sitter parsers produce very detailed syntax tree, many elements of which are not interesting
+for day-to-day selection purposes. kak-tree introduces the concept of a _visible_ node. Node is
+_visible_ when:
+
+. Node is named in the tree-sitter grammar for the given language (as opposed to anonymous nodes,
+http://tree-sitter.github.io/tree-sitter/using-parsers#named-vs-anonymous-nodes[more]).
+. Either there is no white/blacklist for the given filetype or node kind is whitelisted or not
+blacklisted. See <<Configuration>> for details about white/blacklisting.
+
+Most of the kak-tree commands operate on _visible_ nodes and skip not _visible_ ones.
 
 [cols=2*]
 |===
-| tree-select-parent-node
-| Extend selections to the deepest enclosing nodes. If any selection is equal to node range, then
-extend to one's parent range.
 
-| tree-select-next-node
-| Select the deepest enclosing nodes' next siblings.
+| tree-select-parent-node [<KIND>]
+| Select the closest visible ancestor or ancestor of KIND when provided.
 
-| tree-select-prev-node
-| Select the deepest enclosing nodes' previous siblings.
+| tree-select-next-node [<KIND>]
+| Select the closest visible next sibling or next sibling of KIND when provided.
+
+| tree-select-previous-node [<KIND>]
+| Select the closest visible previous sibling or previous sibling of KIND when provided.
+
+| tree-select-children [<KIND>]
+| Select all immediate visible children or all descendants matching KIND when provided.
+
+| tree-select-first-child [<KIND>]
+| Select the first immediate visible children or the first descendant matching KIND when provided.
 
 | tree-node-sexp
-| Show info box with a syntax tree of the deepest enclosing node of the main selection. This time
-"deepest" means "deepest", including anonymous and blacklisted nodes, without any filter applied.
-
-| tree-select-first-child
-| Find the deepest enclosing nodes of selections and then select each node's first child. If node
-has no children then keep selection on node.
-
-| tree-select-children
-| Find the deepest enclosing nodes of selections and then select each node's children. If node has
-no children then keep selection on node.
-
-| tree-select-kind <KIND>
-| Selects all the KIND nodes wholly contained within an existing selection.
-
-| tree-select-parent-kind <KIND>
-| Select the closest ancestors of KIND of selections' deepest enclosing nodes. If any of selections
-don't have such ancestor, remove that selection.
-
+| Show info box with a syntax tree of the main selection parent.
 |===
-
-More commands to come.
 
 == Configuration
 
@@ -94,23 +87,27 @@ group.fn = ["function_item"]
 group.fn = ["function", "arrow_function"]
 ----
 
+Configuration under the `[filetype.default]` key will be used for all filetypes without
+configuration. Specific filetype configuration _doesn't_ extend default configuration but rather
+overwrites it.
+
 ==== White/blacklisting
 
 If `whitelist` array is provided then kak-tree selection will skip nodes which kinds are not whitelisted.
 If `blacklist` array is provided then kak-tree selection will skip nodes which kinds are blacklisted.
 
-NOTE: `whitelist` takes precedence over `blacklist`. In the example above kak-tree would expand
+NOTE: `whitelist` takes precedence over `blacklist`. In the Rust example above kak-tree would expand
 selection up to the function definition, ignoring other node kinds.
 
 NOTE: `tree-node-sexp` command is useful for exploring node kinds which appear in the specific code.
 
 Whitelisting or blacklisting node kinds could be tedious as tree-sitter parsers define many of them,
-but it also could be rewarding as you will be able to quickly modify selection in scopes which matter for you with fewer keystrokes.
+but it also could be rewarding as you will be able to quickly modify selection in scopes which
+matter for you with fewer keystrokes.
 
 ==== Kind groups
 
-Groups of node kinds serve a two-fold purpose when using commands like `tree-select-kind` and
-`tree-select-parent-kind`:
+Groups of node kinds serve a two-fold purpose:
 
 . Groups allow matching functionally similar node kinds (i.e. `identifier` and `scoped_identifier`
 in Rust) by a single query.
