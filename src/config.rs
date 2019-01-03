@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use toml;
 use tree_sitter::Node;
 
-#[derive(Deserialize, Default)]
+#[derive(Deserialize)]
 pub struct Config {
     #[serde(default)]
     filetype: HashMap<String, FiletypeConfig>,
@@ -15,6 +15,18 @@ pub struct FiletypeConfig {
     whitelist: Option<Vec<String>>,
     #[serde(default)]
     group: HashMap<String, Vec<String>>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        let mut config = Config {
+            filetype: HashMap::default(),
+        };
+        config
+            .filetype
+            .insert("default".to_owned(), FiletypeConfig::default());
+        config
+    }
 }
 
 impl Config {
