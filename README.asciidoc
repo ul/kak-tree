@@ -12,8 +12,7 @@ have a negative impact on responsiveness.
 
 ----
 git clone --recurse-submodules
-cargo build --release --features "rust javascript"
-cargo install
+cargo install --path . --force --features "rust javascript"
 cp rc/tree.kak ~/.config/kak/autoload/
 ----
 
