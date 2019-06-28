@@ -86,7 +86,7 @@ fn handle_request(config: &Config, request: &Request) -> String {
     let mut parser = Parser::new();
     let language = ffi::filetype_to_language(&request.filetype).unwrap();
     parser.set_language(language).unwrap();
-    let tree = parser.parse_str(&request.content, None).unwrap();
+    let tree = parser.parse(&request.content, None).unwrap();
     let buffer = request
         .content
         .split('\n')

@@ -5,17 +5,17 @@ authors = ["Ruslan Prokopchuk <fer.obbee@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-clap = "2"
-itertools = "0"
-serde = { version = "1", features = ["derive"] }
-slog = { version = "2", features = ["release_max_level_debug"] }
-slog-scope = "4"
-sloggers = "0"
-toml = "0"
-tree-sitter = "0"
+clap = "2.33.0"
+itertools = "0.8.0"
+serde = { version = "1.0.94", features = ["derive"] }
+slog = { version = "2.4.1", features = ["release_max_level_debug"] }
+slog-scope = "4.1.1"
+sloggers = "0.3.2"
+toml = "0.5.1"
+tree-sitter = "0.3.10"
 
 [build-dependencies]
-cc = { version = "1", features = ["parallel"] }
+cc = { version = "1.0.37", features = ["parallel"] }
 
 # [profile.release]
 # lto = true
