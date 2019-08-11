@@ -16,7 +16,7 @@ pub fn shrink_to_range<'a>(root_node: Node<'a>, range: &Range) -> Node<'a> {
                 continue 'outer;
             }
         }
-        return node;
+        return highest_node_of_same_range(node);
     }
 }
 
@@ -58,4 +58,20 @@ pub fn nodes_in_range<'a>(root_node: Node<'a>, range: &Range) -> Vec<Node<'a>> {
         }
     }
     nodes
+}
+
+fn highest_node_of_same_range<'a>(current_node: Node<'a>) -> Node<'a> {
+    let start_byte = current_node.start_byte();
+    let end_byte = current_node.end_byte();
+    let mut node = current_node;
+    while let Some(parent) = node.parent().and_then(|parent| {
+        if parent.start_byte() < start_byte || end_byte < parent.end_byte() {
+            None
+        } else {
+            Some(parent)
+        }
+    }) {
+        node = parent
+    }
+    node
 }

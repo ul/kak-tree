@@ -113,13 +113,11 @@ fn handle_request(config: &Config, request: &Request) -> String {
                 }
                 None => {
                     for range in &ranges {
-                        let mut node = tree::shrink_to_range(tree.root_node(), range);
-                        if node.range().start_byte == range.start_byte
-                            && node.range().end_byte >= range.end_byte - 1
-                        {
-                            node = node.parent().unwrap_or(node)
-                        }
-                        let node = traverse_up_to_node_which_matters(filetype_config, node);
+                        let node = tree::shrink_to_range(tree.root_node(), range);
+                        let node = traverse_up_to_node_which_matters(
+                            filetype_config,
+                            node.parent().unwrap_or(node),
+                        );
                         new_ranges.push(node.range());
                     }
                 }
@@ -217,8 +215,12 @@ fn traverse_up_to_node_which_matters<'a>(
     current_node: Node<'a>,
 ) -> Node<'a> {
     let mut node = current_node;
-    while !(node.is_named() && filetype_config.is_node_visible(node)) && node.parent().is_some() {
-        node = node.parent().unwrap();
+    while let Some(parent) = if node.is_named() && filetype_config.is_node_visible(node) {
+        None
+    } else {
+        node.parent()
+    } {
+        node = parent;
     }
     node
 }
