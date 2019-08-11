@@ -45,9 +45,19 @@ fn main() {
     ] {
         let mut build = cc::Build::new();
 
-        let tree_sitter: PathBuf = ["vendor", &format!("tree-sitter-{}", lang), "src"]
+        let tree_sitter: PathBuf = match *lang {
+            "typescript" => [
+                "vendor",
+                &format!("tree-sitter-{}", lang),
+                "typescript",
+                "src",
+            ]
             .iter()
-            .collect();
+            .collect(),
+            _ => ["vendor", &format!("tree-sitter-{}", lang), "src"]
+                .iter()
+                .collect(),
+        };
 
         build
             .include(&tree_sitter)
