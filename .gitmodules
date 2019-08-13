@@ -1,60 +1,80 @@
 [submodule "vendor/tree-sitter-rust"]
 	path = vendor/tree-sitter-rust
 	url = https://github.com/tree-sitter/tree-sitter-rust.git
+	shallow = true
 [submodule "https:/github.com/tree-sitter/tree-sitter-javascript.git"]
 	path = https:/github.com/tree-sitter/tree-sitter-javascript.git
 	url = https://github.com/tree-sitter/tree-sitter-verilog.git
+	shallow = true
 [submodule "vendor/tree-sitter-javascript"]
 	path = vendor/tree-sitter-javascript
 	url = https://github.com/tree-sitter/tree-sitter-javascript.git
+	shallow = true
 [submodule "vendor/tree-sitter-css"]
 	path = vendor/tree-sitter-css
 	url = https://github.com/tree-sitter/tree-sitter-css.git
+	shallow = true
 [submodule "vendor/tree-sitter-ruby"]
 	path = vendor/tree-sitter-ruby
 	url = https://github.com/tree-sitter/tree-sitter-ruby.git
+	shallow = true
 [submodule "vendor/tree-sitter-html"]
 	path = vendor/tree-sitter-html
 	url = https://github.com/tree-sitter/tree-sitter-html.git
+	shallow = true
 [submodule "vendor/tree-sitter-go"]
 	path = vendor/tree-sitter-go
 	url = https://github.com/tree-sitter/tree-sitter-go.git
+	shallow = true
 [submodule "vendor/tree-sitter-typescript"]
 	path = vendor/tree-sitter-typescript
 	url = https://github.com/tree-sitter/tree-sitter-typescript.git
+	shallow = true
 [submodule "vendor/tree-sitter-python"]
 	path = vendor/tree-sitter-python
 	url = https://github.com/tree-sitter/tree-sitter-python.git
+	shallow = true
 [submodule "vendor/tree-sitter-c"]
 	path = vendor/tree-sitter-c
 	url = https://github.com/tree-sitter/tree-sitter-c.git
+	shallow = true
 [submodule "vendor/tree-sitter-cpp"]
 	path = vendor/tree-sitter-cpp
 	url = https://github.com/tree-sitter/tree-sitter-cpp.git
+	shallow = true
 [submodule "vendor/tree-sitter-php"]
 	path = vendor/tree-sitter-php
 	url = https://github.com/tree-sitter/tree-sitter-php.git
+	shallow = true
 [submodule "vendor/tree-sitter-json"]
 	path = vendor/tree-sitter-json
 	url = https://github.com/tree-sitter/tree-sitter-json.git
+	shallow = true
 [submodule "vendor/tree-sitter-bash"]
 	path = vendor/tree-sitter-bash
 	url = https://github.com/tree-sitter/tree-sitter-bash.git
+	shallow = true
 [submodule "vendor/tree-sitter-haskell"]
 	path = vendor/tree-sitter-haskell
 	url = https://github.com/tree-sitter/tree-sitter-haskell.git
+	shallow = true
 [submodule "vendor/tree-sitter-c-sharp"]
 	path = vendor/tree-sitter-c-sharp
 	url = https://github.com/tree-sitter/tree-sitter-c-sharp.git
+	shallow = true
 [submodule "vendor/tree-sitter-ocaml"]
 	path = vendor/tree-sitter-ocaml
 	url = https://github.com/tree-sitter/tree-sitter-ocaml.git
+	shallow = true
 [submodule "vendor/tree-sitter-java"]
 	path = vendor/tree-sitter-java
 	url = https://github.com/tree-sitter/tree-sitter-java.git
+	shallow = true
 [submodule "vendor/tree-sitter-scala"]
 	path = vendor/tree-sitter-scala
 	url = https://github.com/tree-sitter/tree-sitter-scala.git
+	shallow = true
 [submodule "vendor/tree-sitter-julia"]
 	path = vendor/tree-sitter-julia
 	url = https://github.com/tree-sitter/tree-sitter-julia.git
+	shallow = true
