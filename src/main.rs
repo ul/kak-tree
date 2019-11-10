@@ -97,30 +97,13 @@ fn handle_request(config: &Config, request: &Request) -> String {
     let filetype_config = config.get_filetype_config(&request.filetype);
     match &request.op {
         Op::SelectParentNode { kind } => {
-            match kind {
-                Some(kind) => {
-                    let kinds = filetype_config.resolve_alias(kind);
-                    for range in &ranges {
-                        let mut cursor = Some(tree::shrink_to_range(tree.root_node(), range));
-                        while let Some(node) = cursor {
-                            if kinds.iter().any(|kind| kind == node.kind()) {
-                                new_ranges.push(node.range());
-                                break;
-                            }
-                            cursor = node.parent();
-                        }
-                    }
-                }
-                None => {
-                    for range in &ranges {
-                        let node = tree::shrink_to_range(tree.root_node(), range);
-                        let node = traverse_up_to_node_which_matters(
-                            filetype_config,
-                            node.parent().unwrap_or(node),
-                        );
-                        new_ranges.push(node.range());
-                    }
-                }
+            let kinds = kind
+                .as_ref()
+                .and_then(|kind| Some(filetype_config.resolve_alias(kind)));
+            for range in &ranges {
+                let node = tree::shrink_to_range(tree.root_node(), range);
+                let node = find_parent_of_interest(filetype_config, node, &kinds);
+                new_ranges.push(node.range());
             }
             kakoune::select_ranges(&buffer, &new_ranges)
         }
@@ -130,8 +113,7 @@ fn handle_request(config: &Config, request: &Request) -> String {
                 .and_then(|kind| Some(filetype_config.resolve_alias(kind)));
             'outer_next: for range in &ranges {
                 let node = tree::shrink_to_range(tree.root_node(), range);
-                let parent_node = traverse_up_to_node_which_matters(filetype_config, node);
-                let mut cursor = parent_node;
+                let mut cursor = traverse_up_to_node_which_matters(filetype_config, node);
                 while let Some(node) = cursor.next_named_sibling() {
                     if filetype_config.is_node_visible(node) && node_of_kinds(node, &kinds) {
                         new_ranges.push(node.range());
@@ -139,9 +121,8 @@ fn handle_request(config: &Config, request: &Request) -> String {
                     }
                     cursor = node;
                 }
-                if node_of_kinds(parent_node, &kinds) {
-                    new_ranges.push(parent_node.range());
-                }
+                let node = find_parent_of_interest(filetype_config, node, &kinds);
+                new_ranges.push(node.range());
             }
             kakoune::select_ranges(&buffer, &new_ranges)
         }
@@ -151,8 +132,7 @@ fn handle_request(config: &Config, request: &Request) -> String {
                 .and_then(|kind| Some(filetype_config.resolve_alias(kind)));
             'outer_prev: for range in &ranges {
                 let node = tree::shrink_to_range(tree.root_node(), range);
-                let parent_node = traverse_up_to_node_which_matters(filetype_config, node);
-                let mut cursor = parent_node;
+                let mut cursor = traverse_up_to_node_which_matters(filetype_config, node);
                 while let Some(node) = cursor.prev_named_sibling() {
                     if filetype_config.is_node_visible(node) && node_of_kinds(node, &kinds) {
                         new_ranges.push(node.range());
@@ -160,9 +140,8 @@ fn handle_request(config: &Config, request: &Request) -> String {
                     }
                     cursor = node;
                 }
-                if node_of_kinds(parent_node, &kinds) {
-                    new_ranges.push(parent_node.range());
-                }
+                let node = find_parent_of_interest(filetype_config, node, &kinds);
+                new_ranges.push(node.range());
             }
             kakoune::select_ranges(&buffer, &new_ranges)
         }
@@ -223,6 +202,27 @@ fn traverse_up_to_node_which_matters<'a>(
         node = parent;
     }
     node
+}
+
+fn find_parent_of_interest<'a>(
+    filetype_config: &FiletypeConfig,
+    current_node: Node<'a>,
+    kinds: &Option<Vec<String>>,
+) -> Node<'a> {
+    let parent = current_node.parent();
+    match &kinds {
+        Some(kinds) => {
+            let mut cursor = parent;
+            while let Some(node) = cursor {
+                if kinds.iter().any(|kind| kind == node.kind()) {
+                    return node;
+                }
+                cursor = node.parent();
+            }
+            current_node
+        }
+        None => traverse_up_to_node_which_matters(filetype_config, parent.unwrap_or(current_node)),
+    }
 }
 
 fn node_of_kinds(node: Node, kinds: &Option<Vec<String>>) -> bool {
