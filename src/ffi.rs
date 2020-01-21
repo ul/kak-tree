@@ -11,6 +11,8 @@ extern "C" {
     fn tree_sitter_cpp() -> Language;
     #[cfg(feature = "css")]
     fn tree_sitter_css() -> Language;
+    #[cfg(feature = "elm")]
+    fn tree_sitter_elm() -> Language;
     #[cfg(feature = "go")]
     fn tree_sitter_go() -> Language;
     #[cfg(feature = "haskell")]
@@ -53,6 +55,8 @@ pub fn filetype_to_language(filetype: &str) -> Option<Language> {
         "cpp" => tree_sitter_cpp,
         #[cfg(feature = "css")]
         "css" => tree_sitter_css,
+        #[cfg(feature = "elm")]
+        "elm" => tree_sitter_elm,
         #[cfg(feature = "go")]
         "go" => tree_sitter_go,
         #[cfg(feature = "haskell")]

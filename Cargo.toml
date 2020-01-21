@@ -28,6 +28,7 @@ all = [
     "c",
     "cpp",
     "css",
+    "elm",
     "go",
     "haskell",
     "html",
@@ -48,6 +49,7 @@ c_sharp = []
 c = []
 cpp = []
 css = []
+elm = []
 go = []
 haskell = []
 html = []
