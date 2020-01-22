@@ -8,7 +8,8 @@ pub fn shrink_to_range<'a>(root_node: Node<'a>, range: &Range) -> Node<'a> {
     let mut node = root_node;
     'outer: loop {
         let parent = node;
-        for child in parent.children() {
+        let mut cursor = parent.walk();
+        for child in parent.children(&mut cursor) {
             if child.range().start_byte <= range.start_byte
                 && range.end_byte <= child.range().end_byte
             {
@@ -27,7 +28,8 @@ pub fn nodes_in_range<'a>(root_node: Node<'a>, range: &Range) -> Vec<Node<'a>> {
         nodes.push(node);
         return nodes;
     }
-    for child in node.children() {
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
         if child.range().start_byte <= range.start_byte && range.end_byte >= child.range().end_byte
         {
             nodes.extend(nodes_in_range(
