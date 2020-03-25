@@ -81,3 +81,6 @@
 [submodule "vendor/tree-sitter-elm"]
 	path = vendor/tree-sitter-elm
 	url = https://github.com/Razzeee/tree-sitter-elm.git
+[submodule "vendor/tree-sitter-clojure"]
+	path = vendor/tree-sitter-clojure
+	url = https://github.com/sogaiu/tree-sitter-clojure

@@ -7,6 +7,8 @@ extern "C" {
     fn tree_sitter_c() -> Language;
     #[cfg(feature = "c_sharp")]
     fn tree_sitter_c_sharp() -> Language;
+    #[cfg(feature = "clojure")]
+    fn tree_sitter_clojure() -> Language;
     #[cfg(feature = "cpp")]
     fn tree_sitter_cpp() -> Language;
     #[cfg(feature = "css")]
@@ -51,6 +53,8 @@ pub fn filetype_to_language(filetype: &str) -> Option<Language> {
         "c" => tree_sitter_c,
         #[cfg(feature = "c_sharp")]
         "c_sharp" => tree_sitter_c_sharp,
+        #[cfg(feature = "clojure")]
+        "clojure" => tree_sitter_clojure,
         #[cfg(feature = "cpp")]
         "cpp" => tree_sitter_cpp,
         #[cfg(feature = "css")]
