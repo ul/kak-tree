@@ -26,6 +26,7 @@ all = [
     "bash",
     "c_sharp",
     "c",
+    "clojure",
     "cpp",
     "css",
     "elm",
@@ -47,6 +48,7 @@ all = [
 bash = []
 c_sharp = []
 c = []
+clojure = []
 cpp = []
 css = []
 elm = []
