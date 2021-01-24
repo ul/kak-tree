@@ -193,15 +193,11 @@ fn traverse_up_to_node_which_matters<'a>(
     filetype_config: &FiletypeConfig,
     current_node: Node<'a>,
 ) -> Node<'a> {
-    let mut node = current_node;
-    while let Some(parent) = if node.is_named() && filetype_config.is_node_visible(node) {
-        None
-    } else {
-        node.parent()
-    } {
-        node = parent;
+    let mut opt_node = Some(current_node);
+    while let Some(node) = opt_node.filter(|&n| !(n.is_named() && filetype_config.is_node_visible(n))) {
+        opt_node = node.parent();
     }
-    node
+    opt_node.unwrap_or(current_node)
 }
 
 fn find_parent_of_interest<'a>(
