@@ -84,3 +84,7 @@
 [submodule "vendor/tree-sitter-clojure"]
 	path = vendor/tree-sitter-clojure
 	url = https://github.com/sogaiu/tree-sitter-clojure.git
+[submodule "vendor/tree-sitter-racket"]
+	path = vendor/tree-sitter-racket
+	url = https://github.com/tautologico/tree-sitter-racket.git
+	shallow = true

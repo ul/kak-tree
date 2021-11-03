@@ -35,6 +35,8 @@ extern "C" {
     fn tree_sitter_php() -> Language;
     #[cfg(feature = "python")]
     fn tree_sitter_python() -> Language;
+    #[cfg(feature = "racket")]
+    fn tree_sitter_racket() -> Language;
     #[cfg(feature = "ruby")]
     fn tree_sitter_ruby() -> Language;
     #[cfg(feature = "rust")]
@@ -81,6 +83,8 @@ pub fn filetype_to_language(filetype: &str) -> Option<Language> {
         "php" => tree_sitter_php,
         #[cfg(feature = "python")]
         "python" => tree_sitter_python,
+        #[cfg(feature = "racket")]
+        "racket" => tree_sitter_racket,
         #[cfg(feature = "ruby")]
         "ruby" => tree_sitter_ruby,
         #[cfg(feature = "rust")]
