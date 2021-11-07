@@ -10,6 +10,8 @@ fn main() {
         "c-sharp",
         #[cfg(feature = "c")]
         "c",
+        #[cfg(feature = "clojure")]
+        "clojure",
         #[cfg(feature = "cpp")]
         "cpp",
         #[cfg(feature = "css")]
