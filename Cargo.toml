@@ -40,6 +40,7 @@ all = [
     "ocaml",
     "php",
     "python",
+    "racket",
     "ruby",
     "rust",
     "scala",
@@ -62,6 +63,7 @@ julia = []
 ocaml = []
 php = []
 python = []
+racket = []
 ruby = []
 rust = []
 scala = []

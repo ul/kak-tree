@@ -36,6 +36,8 @@ fn main() {
         "php",
         #[cfg(feature = "python")]
         "python",
+        #[cfg(feature = "racket")]
+        "racket",
         #[cfg(feature = "ruby")]
         "ruby",
         #[cfg(feature = "rust")]
